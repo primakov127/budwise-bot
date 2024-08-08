@@ -1,0 +1,5 @@
+aiogram
+aiogram_dialog
+beanie
+pydantic
+motor
