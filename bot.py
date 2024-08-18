@@ -111,6 +111,16 @@ async def main():
     
     
     await site.start()
+    
+    try:
+        # Keep the application running
+        while True:
+            await asyncio.sleep(3600)  # Sleep for an hour
+    except (KeyboardInterrupt, SystemExit):
+        logging.info("Shutting down...")
+    finally:
+        await bot.session.close()
+        await runner.cleanup()
 
 
 if __name__ == '__main__':
