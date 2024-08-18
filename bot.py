@@ -103,7 +103,13 @@ async def main():
     
     runner = web.AppRunner(app)
     await runner.setup()
-    site = web.TCPSite(runner)
+    
+    WEB_HOST = os.getenv("WEB_HOST")
+    WEB_PORT = os.getenv("WEB_PORT")
+    
+    site = web.TCPSite(runner, WEB_HOST, WEB_PORT)
+    
+    
     await site.start()
 
 
