@@ -105,7 +105,7 @@ async def main():
     await runner.setup()
     
     WEB_HOST = os.getenv("WEB_HOST")
-    WEB_PORT = os.getenv("WEB_PORT")
+    WEB_PORT = int(os.getenv("WEB_PORT"))
     
     site = web.TCPSite(runner, WEB_HOST, WEB_PORT)
     
