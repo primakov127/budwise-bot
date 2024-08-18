@@ -1,4 +1,3 @@
-
 import asyncio
 import logging
 import os.path
@@ -8,8 +7,10 @@ from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import ExceptionTypeFilter
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import ErrorEvent, Message, ReplyKeyboardRemove
+from aiogram.webhook.aiohttp_server import SimpleRequestHandler, setup_application
 from aiogram_dialog import DialogManager, ShowMode, StartMode, setup_dialogs
 from aiogram_dialog.api.exceptions import UnknownIntent
+from aiohttp import web
 
 from db import init_db
 from dialogs import states
@@ -18,6 +19,9 @@ from dialogs.edit_categories import edit_categories
 from dialogs.edit_tags import edit_tags
 from dialogs.main import main_dialog
 from dialogs.settings_menu import settings_menu
+
+# Path to webhook route, on which Telegram will send requests
+WEBHOOK_PATH = "/webhook"
 
 
 async def start(message: Message, dialog_manager: DialogManager):
@@ -64,6 +68,7 @@ dialog_router.include_routers(
 def setup_dp():
     storage = MemoryStorage()
     dp = Dispatcher(storage=storage)
+    dp.startup.register(on_startup)
     dp.message.register(start, F.text == "/start")
     dp.errors.register(
         on_unknown_intent,
@@ -73,14 +78,33 @@ def setup_dp():
     setup_dialogs(dp)
     return dp
 
+async def on_startup(bot: Bot) -> None:
+    BASE_WEBHOOK_URL = os.getenv("BASE_WEBHOOK_URL")
+    
+    await bot.set_webhook(f"{BASE_WEBHOOK_URL}{WEBHOOK_PATH}")
 
 async def main():
     # real main
     logging.basicConfig(level=logging.INFO)
-    bot = Bot(token=os.getenv("BOT_TOKEN"))
+    TOKEN = os.getenv("BOT_TOKEN")
+    
+    bot = Bot(TOKEN)
     await init_db()
     dp = setup_dp()
-    await dp.start_polling(bot)
+    app = web.Application()
+    webhook_requests_handler = SimpleRequestHandler(
+        dispatcher=dp,
+        bot=bot
+    )
+    
+    webhook_requests_handler.register(app, path=WEBHOOK_PATH)
+    setup_application(app, dp, bot=bot)
+
+    
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner)
+    await site.start()
 
 
 if __name__ == '__main__':
