@@ -1,9 +1,8 @@
-from dataclasses import dataclass
-from typing import Optional
+from beanie import Document
 
 
-@dataclass
-class Category:
-    id: str
+class Category(Document):
     name: str
-    description: Optional[str]
+    
+    class Settings:
+        name = "category"

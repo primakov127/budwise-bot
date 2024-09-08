@@ -1,9 +1,11 @@
-from dataclasses import dataclass
 from typing import Optional
 
+from beanie import Document
 
-@dataclass
-class Tag:
-    id: str
+
+class Tag(Document):
     name: str
     description: Optional[str]
+    
+    class Settings:
+        name = "tag"

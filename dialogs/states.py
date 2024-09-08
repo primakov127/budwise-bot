@@ -16,5 +16,7 @@ class EditTags(StatesGroup):
 class AddTransaction(StatesGroup):
     MAIN = State()
     SPECIFY_CATEGORY = State()
+    SPECIFY_DESCRIPTION=State()
+    SPECIFY_TAGS = State()
     CONFIRM = State()
     CHANGE_DATE = State()

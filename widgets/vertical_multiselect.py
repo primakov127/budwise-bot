@@ -2,10 +2,10 @@ from typing import Dict
 
 from aiogram_dialog import DialogManager
 from aiogram_dialog.api.internal import RawKeyboard
-from aiogram_dialog.widgets.kbd import Select
+from aiogram_dialog.widgets.kbd import Multiselect
 
 
-class VerticalSelect(Select):
+class VerticalMultiselect(Multiselect):
     async def _render_keyboard(
             self,
             data: Dict,
