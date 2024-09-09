@@ -2,6 +2,7 @@ import asyncio
 import logging
 import os.path
 
+import aiohttp
 from aiogram import Bot, Dispatcher, F, Router
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import ExceptionTypeFilter
@@ -82,6 +83,15 @@ async def on_startup(bot: Bot) -> None:
     BASE_WEBHOOK_URL = os.getenv("BASE_WEBHOOK_URL")
     
     await bot.set_webhook(f"{BASE_WEBHOOK_URL}{WEBHOOK_PATH}")
+    
+async def keep_alive(url: str):
+    async with aiohttp.ClientSession() as session:
+        try:
+            # Fire off the request without waiting for the response
+            asyncio.create_task(session.get(url))
+            logging.info(f"Request to {url} fired off")
+        except Exception as e:
+            logging.error(f"Request to {url} failed: {e}")
 
 async def main():
     # real main
@@ -115,7 +125,8 @@ async def main():
     try:
         # Keep the application running
         while True:
-            await asyncio.sleep(3600)  # Sleep for an hour
+            await asyncio.sleep(840)  # Sleep for 14 minutes since service deployed on Render will go down after 15 minutes
+            await keep_alive(f"{WEB_HOST}{WEBHOOK_PATH}")
     except (KeyboardInterrupt, SystemExit):
         logging.info("Shutting down...")
     finally:
