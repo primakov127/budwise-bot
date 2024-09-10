@@ -87,9 +87,8 @@ async def on_startup(bot: Bot) -> None:
 async def keep_alive(url: str):
     async with aiohttp.ClientSession() as session:
         try:
-            # Fire off the request without waiting for the response
-            asyncio.create_task(session.get(url))
-            logging.info(f"Request to {url} fired off")
+            async with session.get(url) as response:
+                logging.info(f"Request to {url} returned status {response.status}")
         except Exception as e:
             logging.error(f"Request to {url} failed: {e}")
 
