@@ -83,14 +83,9 @@ async def on_startup(bot: Bot) -> None:
     BASE_WEBHOOK_URL = os.getenv("BASE_WEBHOOK_URL")
     
     await bot.set_webhook(f"{BASE_WEBHOOK_URL}{WEBHOOK_PATH}")
-    
-async def keep_alive(url: str):
-    async with aiohttp.ClientSession() as session:
-        try:
-            async with session.get(url) as response:
-                logging.info(f"Request to {url} returned status {response.status}")
-        except Exception as e:
-            logging.error(f"Request to {url} failed: {e}")
+
+async def health_check(request):
+    return web.Response(text="OK")
 
 async def main():
     # real main
@@ -108,7 +103,8 @@ async def main():
     
     webhook_requests_handler.register(app, path=WEBHOOK_PATH)
     setup_application(app, dp, bot=bot)
-
+    
+    app.router.add_get('/health', health_check)
     
     runner = web.AppRunner(app)
     await runner.setup()
@@ -118,14 +114,12 @@ async def main():
     
     site = web.TCPSite(runner, WEB_HOST, WEB_PORT)
     
-    
     await site.start()
     
     try:
         # Keep the application running
         while True:
-            await asyncio.sleep(840)  # Sleep for 14 minutes since service deployed on Render will go down after 15 minutes
-            await keep_alive(f"{WEB_HOST}{WEBHOOK_PATH}")
+            await asyncio.sleep(3600)
     except (KeyboardInterrupt, SystemExit):
         logging.info("Shutting down...")
     finally:
