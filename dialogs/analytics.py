@@ -1,21 +1,25 @@
-from aiogram_dialog import Dialog, Window
-from aiogram_dialog.widgets.kbd import Button
+import io
+from datetime import datetime
+
+import plotly.graph_objects as go
+from aiogram.types import BufferedInputFile, CallbackQuery
+from aiogram_dialog import Dialog, DialogManager, Window
+from aiogram_dialog.widgets.kbd import Button, SwitchTo
 from aiogram_dialog.widgets.text import Const
-from aiogram.types import BufferedInputFile
 
 from dialogs.states import AnalyticsStates
 from services.expense_service import ExpenseService
-from datetime import datetime
-import plotly.graph_objects as go
-import io
 
-async def current_month_handler(c, button, manager):
-    user_id = str(c.from_user.id)
+from . import states
+
+
+async def current_month_handler(callback: CallbackQuery, button: Button, manager: DialogManager):
+    user_id = str(callback.from_user.id)
     expense_service = ExpenseService()
     expenses = await expense_service.get_current_month_expenses(user_id)
     
     if not expenses:
-        await c.answer("No expenses found for the current month.")
+        await callback.answer("No expenses found for the current month.")
         return
 
     fig = create_pie_chart(expenses)
@@ -26,8 +30,8 @@ async def current_month_handler(c, button, manager):
     img_bytes.seek(0)
     
     # Send the image to the user
-    await c.bot.send_photo(
-        c.from_user.id,
+    await callback.bot.send_photo(
+        callback.from_user.id,
         BufferedInputFile(img_bytes.getvalue(), filename="current_month_expenses.png"),
         caption="Current Month Expenses by Category"
     )
@@ -58,7 +62,7 @@ analytics_dialog = Dialog(
         Const("Analytics Menu"),
         Button(Const("Current Month"), id="current_month", on_click=current_month_handler),
         Button(Const("Current Year"), id="current_year", on_click=current_year_handler),
-        Button(Const("Back"), id="back", on_click=lambda c, b, m: m.dialog().back()),
-        state=AnalyticsStates.menu
+        SwitchTo(Const("Back"), id="back", state=states.Main.MAIN),
+        state=AnalyticsStates.MAIN
     )
 )
