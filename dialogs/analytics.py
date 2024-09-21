@@ -27,12 +27,12 @@ async def current_month_handler(callback: CallbackQuery, button: Button, manager
     
     # Save the plot as a PNG image
     img_bytes = io.BytesIO()
-    fig.write_image(img_bytes, format="png")
+    fig.write_image(img_bytes, format="png", width=1024, height=1024, scale=2)
     img_bytes.seek(0)
     
     # Send the image to the user and await the result
     await callback.bot.send_photo(
-        callback.from_user.id,
+        user_id,
         BufferedInputFile(img_bytes.getvalue(), filename="current_month_expenses.png"),
         caption="Current Month Expenses by Category"
     )
@@ -49,7 +49,9 @@ def create_pie_chart(expenses_by_category):
     values = [expense['amount'] for expense in expenses_by_category]
     
     fig = go.Figure(data=[go.Pie(labels=labels, values=values)])
-    fig.update_layout(title_text=f"Expenses by Category - {datetime.now().strftime('%B %Y')}")
+    fig.update_layout(title_text=f"Expenses by Category - {datetime.now().strftime('%B %Y')}",
+                      textposition='inside', textinfo='percent+value',
+                      texttemplate='%{value} zl<br>%{percent}')
     return fig
 
 analytics_dialog = Dialog(
