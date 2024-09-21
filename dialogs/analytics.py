@@ -4,10 +4,11 @@ from datetime import datetime
 import plotly.graph_objects as go
 from aiogram.types import BufferedInputFile, CallbackQuery
 from aiogram_dialog import Dialog, DialogManager, Window
-from aiogram_dialog.widgets.kbd import Button, SwitchTo
+from aiogram_dialog.widgets.kbd import Button
 from aiogram_dialog.widgets.text import Const
 
-from dialogs.states import AnalyticsStates
+from dialogs import states
+from dialogs.common import MAIN_MENU_BUTTON
 from services.expense_service import ExpenseService
 
 from . import states
@@ -35,6 +36,7 @@ async def current_month_handler(callback: CallbackQuery, button: Button, manager
         BufferedInputFile(img_bytes.getvalue(), filename="current_month_expenses.png"),
         caption="Current Month Expenses by Category"
     )
+    await manager.start(states.Main.MAIN)
 
 async def current_year_handler(c, button, manager):
     # TODO: Implement current year analytics
@@ -53,7 +55,7 @@ analytics_dialog = Dialog(
         Const("Analytics Menu"),
         Button(Const("Current Month"), id="current_month", on_click=current_month_handler),
         Button(Const("Current Year"), id="current_year", on_click=current_year_handler),
-        SwitchTo(Const("Back"), id="back", state=states.Main.MAIN),
-        state=AnalyticsStates.MAIN
+        MAIN_MENU_BUTTON,
+        state=states.Analytics.MAIN
     )
 )
