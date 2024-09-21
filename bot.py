@@ -14,12 +14,15 @@ from aiogram_dialog.api.exceptions import UnknownIntent
 from aiohttp import web
 
 from db import init_db
-from dialogs import states
-from dialogs.add_transaction import add_transaction_dialog
-from dialogs.edit_categories import edit_categories
-from dialogs.edit_tags import edit_tags
-from dialogs.main import main_dialog
-from dialogs.settings_menu import settings_menu
+from dialogs import (
+    add_transaction_dialog,
+    analytics_dialog,
+    edit_categories,
+    edit_tags,
+    main_dialog,
+    settings_menu,
+    states,
+)
 
 # Path to webhook route, on which Telegram will send requests
 WEBHOOK_PATH = "/webhook"
@@ -60,6 +63,7 @@ dialog_router = Router()
 dialog_router.include_routers(
     main_dialog,
     add_transaction_dialog,
+    analytics_dialog,
     settings_menu,
     edit_categories,
     edit_tags

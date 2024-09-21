@@ -21,5 +21,5 @@ class AddTransaction(StatesGroup):
     CONFIRM = State()
     CHANGE_DATE = State()
 
-class AnalyticsStates(StatesGroup):
+class Analytics(StatesGroup):
     MAIN = State()
