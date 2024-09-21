@@ -49,9 +49,10 @@ def create_pie_chart(expenses_by_category):
     values = [expense['amount'] for expense in expenses_by_category]
     
     fig = go.Figure(data=[go.Pie(labels=labels, values=values)])
-    fig.update_layout(title_text=f"Expenses by Category - {datetime.now().strftime('%B %Y')}",
-                      textposition='inside', textinfo='percent+value',
+    fig.update_layout(title_text=f"Expenses by Category - {datetime.now().strftime('%B %Y')}")
+    fig.update_traces(textposition='inside', textinfo='percent+value',
                       texttemplate='%{value} zl<br>%{percent}')
+    
     return fig
 
 analytics_dialog = Dialog(
