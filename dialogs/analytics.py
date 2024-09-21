@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 from aiogram.types import BufferedInputFile, CallbackQuery, Message
 from aiogram_dialog import Dialog, DialogManager, ShowMode, Window
 from aiogram_dialog.widgets.kbd import Button
-from aiogram_dialog.widgets.text import Const
+from aiogram_dialog.widgets.text import Const, Format
 
 from dialogs import states
 from dialogs.common import MAIN_MENU_BUTTON
@@ -67,9 +67,13 @@ def create_pie_chart(expenses_by_category):
 
 analytics_dialog = Dialog(
     Window(
-        Const("Analytics Menu"),
-        Button(Const("Current Month"), id="current_month", on_click=current_month_handler),
-        Button(Const("Current Year"), id="current_year", on_click=current_year_handler),
+        Format(
+            "📊 Welcome to your Analytics Dashboard!\n\n"
+            "Get insights into your expenses and track your spending with ease.\n\n"
+            "What would you like to view today?\n\n"
+        ),
+        Button(Const("📅 Current Month"), id="current_month", on_click=current_month_handler),
+        Button(Const("📆 Current Year"), id="current_year", on_click=current_year_handler),
         MAIN_MENU_BUTTON,
         state=states.Analytics.MAIN
     )
