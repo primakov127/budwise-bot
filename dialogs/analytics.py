@@ -16,13 +16,13 @@ from . import states
 async def current_month_handler(callback: CallbackQuery, button: Button, manager: DialogManager):
     user_id = str(callback.from_user.id)
     expense_service = ExpenseService()
-    expenses = await expense_service.get_current_month_expenses(user_id)
+    expenses_by_category = await expense_service.get_current_month_expenses(user_id)
     
-    if not expenses:
+    if not expenses_by_category:
         await callback.answer("No expenses found for the current month.")
         return
 
-    fig = create_pie_chart(expenses)
+    fig = create_pie_chart(expenses_by_category)
     
     # Save the plot as a PNG image
     img_bytes = io.BytesIO()
@@ -40,18 +40,9 @@ async def current_year_handler(c, button, manager):
     # TODO: Implement current year analytics
     await c.answer("Current Year analytics not implemented yet")
 
-def create_pie_chart(expenses):
-    categories = {}
-    for expense in expenses:
-        category = expense.category
-        amount = expense.amount
-        if category in categories:
-            categories[category] += amount
-        else:
-            categories[category] = amount
-    
-    labels = list(categories.keys())
-    values = list(categories.values())
+def create_pie_chart(expenses_by_category):
+    labels = [expense['category'] for expense in expenses_by_category]
+    values = [expense['amount'] for expense in expenses_by_category]
     
     fig = go.Figure(data=[go.Pie(labels=labels, values=values)])
     fig.update_layout(title_text=f"Expenses by Category - {datetime.now().strftime('%B %Y')}")

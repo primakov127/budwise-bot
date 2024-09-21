@@ -30,19 +30,28 @@ class ExpenseService:
         delete_result = await expense.delete()
         return delete_result.deleted_count
 
-    async def get_current_month_expenses(self, user_id: str) -> list[Expense]:
-        today = date.today()
-        start_of_month = date(today.year, today.month, 1)
-        end_of_month = date(today.year, today.month + 1, 1) if today.month < 12 else date(today.year + 1, 1, 1)
-        
-        expenses = await Expense.find(
-            {
+    async def get_current_month_expenses(self, user_id: str) -> list[dict]:
+        month = datetime.now().month
+        expenses_by_category = await Expense.aggregate([
+            {"$match": {
                 "user_id": user_id,
-                "date": {
-                    "$gte": datetime.combine(start_of_month, datetime.min.time()),
-                    "$lt": datetime.combine(end_of_month, datetime.min.time())
-                }
-            }
-        ).to_list()
+                "$expr": {"$eq": [{"$month": "$date"}, month]}
+            }},
+            {"$lookup": {
+                "from": "category",
+                "localField": "category",
+                "foreignField": "_id",
+                "as": "category_info"
+            }},
+            {"$unwind": "$category_info"},
+            {"$group": {
+                "_id": "$category_info.name",
+                "total_expenses": {"$sum": "$amount"}
+            }},
+            {"$project": {
+                "category": "$_id",
+                "amount": "$total_expenses",
+            }}
+        ]).to_list()
         
-        return expenses
+        return expenses_by_category
