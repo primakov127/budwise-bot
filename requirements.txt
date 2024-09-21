@@ -3,3 +3,6 @@ aiogram_dialog
 beanie
 pydantic
 motor
+pandas
+plotly
+kaleido
