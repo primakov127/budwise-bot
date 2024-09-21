@@ -30,12 +30,14 @@ async def current_month_handler(callback: CallbackQuery, button: Button, manager
     fig.write_image(img_bytes, format="png")
     img_bytes.seek(0)
     
-    # Send the image to the user
+    # Send the image to the user and await the result
     await callback.bot.send_photo(
         callback.from_user.id,
         BufferedInputFile(img_bytes.getvalue(), filename="current_month_expenses.png"),
         caption="Current Month Expenses by Category"
     )
+    
+    # Now that the image has been sent, switch the state
     await manager.start(states.Main.MAIN)
 
 async def current_year_handler(c, button, manager):
