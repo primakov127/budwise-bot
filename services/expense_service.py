@@ -1,5 +1,5 @@
 from typing import Any
-
+from datetime import datetime, date
 from beanie import PydanticObjectId
 
 from db import db
@@ -29,3 +29,20 @@ class ExpenseService:
     async def delete_expense(self, expense: Expense) -> int:
         delete_result = await expense.delete()
         return delete_result.deleted_count
+
+    async def get_current_month_expenses(self, user_id: str) -> list[Expense]:
+        today = date.today()
+        start_of_month = date(today.year, today.month, 1)
+        end_of_month = date(today.year, today.month + 1, 1) if today.month < 12 else date(today.year + 1, 1, 1)
+        
+        expenses = await Expense.find(
+            {
+                "user_id": user_id,
+                "date": {
+                    "$gte": datetime.combine(start_of_month, datetime.min.time()),
+                    "$lt": datetime.combine(end_of_month, datetime.min.time())
+                }
+            }
+        ).to_list()
+        
+        return expenses

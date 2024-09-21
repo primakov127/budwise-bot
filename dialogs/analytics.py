@@ -4,14 +4,15 @@ from aiogram_dialog.widgets.text import Const
 from aiogram.types import BufferedInputFile
 
 from dialogs.states import AnalyticsStates
-from services.expense_service import get_current_month_expenses
+from services.expense_service import ExpenseService
 from datetime import datetime
 import plotly.graph_objects as go
 import io
 
 async def current_month_handler(c, button, manager):
-    user_id = c.from_user.id
-    expenses = await get_current_month_expenses(user_id)
+    user_id = str(c.from_user.id)
+    expense_service = ExpenseService()
+    expenses = await expense_service.get_current_month_expenses(user_id)
     
     if not expenses:
         await c.answer("No expenses found for the current month.")
