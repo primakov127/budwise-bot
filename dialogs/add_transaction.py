@@ -4,8 +4,8 @@ from datetime import date
 from typing import Any
 
 from aiogram import F
-from aiogram.types import CallbackQuery
-from aiogram_dialog import Data, Dialog, DialogManager, Window
+from aiogram.types import CallbackQuery, Message
+from aiogram_dialog import Data, Dialog, DialogManager, ShowMode, StartMode, Window
 from aiogram_dialog.widgets.input import TextInput
 from aiogram_dialog.widgets.kbd import (
     Button,
@@ -98,9 +98,10 @@ async def on_tags_changed(callback: CallbackQuery, widget: ManagedMultiselect[st
     manager.current_context().widget_data[FIELD_SELECTED_TAGS] = tag_names
     manager.current_context().widget_data[FIELD_SELECTED_TAG_IDS] = [ObjectId(tag_id) for tag_id in selected_tag_ids]
     
-async def on_description_changed(message, textInput, manager: DialogManager, description: str):
+async def on_description_changed(message: Message, textInput, manager: DialogManager, description: str):
     manager.current_context().widget_data[FIELD_DESCRIPTION] = description
-    await manager.switch_to(states.AddTransaction.CONFIRM)
+    await message.delete()
+    await manager.switch_to(states.AddTransaction.CONFIRM, ShowMode.DELETE_AND_SEND)
 
 async def on_transaction_added(callback: CallbackQuery, widget: Any, manager: DialogManager):
     transaction_amount = float(manager.current_context().widget_data[FIELD_AMOUNT])
@@ -120,7 +121,7 @@ async def on_transaction_added(callback: CallbackQuery, widget: Any, manager: Di
     
     await transaction.insert()
     
-    await manager.start(states.Main.MAIN)
+    await manager.start(states.Main.MAIN, mode=StartMode.RESET_STACK, show_mode=ShowMode.DELETE_AND_SEND)
     
 async def on_date_changed(callback: CallbackQuery, widget, manager: DialogManager, selected_date: date):
     print(manager.current_context().widget_data[FIELD_DATE])

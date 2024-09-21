@@ -6,8 +6,6 @@ from . import states
 
 main_dialog = Dialog(
     Window(
-        Const("This is budwise application for running your finances."),
-        Const("Use buttons below to see some options."),
         Start(
             text=Const("Add Transaction"),
             id="transaction",

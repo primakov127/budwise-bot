@@ -1,9 +1,10 @@
+import asyncio
 import io
 from datetime import datetime
 
 import plotly.graph_objects as go
-from aiogram.types import BufferedInputFile, CallbackQuery
-from aiogram_dialog import Dialog, DialogManager, Window
+from aiogram.types import BufferedInputFile, CallbackQuery, Message
+from aiogram_dialog import Dialog, DialogManager, ShowMode, Window
 from aiogram_dialog.widgets.kbd import Button
 from aiogram_dialog.widgets.text import Const
 
@@ -31,18 +32,27 @@ async def current_month_handler(callback: CallbackQuery, button: Button, manager
     img_bytes.seek(0)
     
     # Send the image to the user and await the result
-    await callback.bot.send_photo(
+    photo_message = await callback.bot.send_photo(
         user_id,
         BufferedInputFile(img_bytes.getvalue(), filename="current_month_expenses.png"),
-        caption="Current Month Expenses by Category"
+        caption=datetime.now().strftime("%d %B %Y %H:%M")
     )
     
+    remove_message_delayed(photo_message, 10)
+    
     # Now that the image has been sent, switch the state
-    await manager.start(states.Main.MAIN)
+    await manager.start(states.Main.MAIN, show_mode=ShowMode.DELETE_AND_SEND)
 
 async def current_year_handler(c, button, manager):
     # TODO: Implement current year analytics
     await c.answer("Current Year analytics not implemented yet")
+    
+def remove_message_delayed(message: Message, delay_seconds: int):
+    async def remove_message():
+        await asyncio.sleep(delay_seconds)
+        await message.delete()
+    asyncio.create_task(remove_message())
+    
 
 def create_pie_chart(expenses_by_category):
     labels = [expense['category'] for expense in expenses_by_category]
