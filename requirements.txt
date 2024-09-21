@@ -5,4 +5,5 @@ pydantic
 motor
 pandas
 plotly
-kaleido
+kaleidoplotly==5.14.1
+kaleido==0.2.1
