@@ -3,6 +3,7 @@ from aiogram_dialog.widgets.kbd import Start
 from aiogram_dialog.widgets.text import Const
 
 from . import states
+from .states import AnalyticsStates
 
 main_dialog = Dialog(
     Window(
@@ -17,6 +18,11 @@ main_dialog = Dialog(
             text=Const("Settings"),
             id="settings",
             state=states.SettingsMenu.MAIN,
+        ),
+        Start(
+            text=Const("Analytics"),
+            id="analytics",
+            state=AnalyticsStates.MAIN,
         ),
         state=states.Main.MAIN,
     ),

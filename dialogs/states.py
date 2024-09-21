@@ -20,3 +20,6 @@ class AddTransaction(StatesGroup):
     SPECIFY_TAGS = State()
     CONFIRM = State()
     CHANGE_DATE = State()
+
+class AnalyticsStates(StatesGroup):
+    MAIN = State()
