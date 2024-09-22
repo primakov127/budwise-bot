@@ -57,9 +57,11 @@ def remove_message_delayed(message: Message, delay_seconds: int):
 def create_pie_chart(expenses_by_category):
     labels = [expense['category'] for expense in expenses_by_category]
     values = [expense['amount'] for expense in expenses_by_category]
+    total_expenses = sum(values)
     
-    fig = go.Figure(data=[go.Pie(labels=labels, values=values)])
-    fig.update_layout(title_text=f"Expenses by Category - {datetime.now().strftime('%B %Y')}")
+    fig = go.Figure(data=[go.Pie(labels=labels, values=values, hole=0.3)])
+    fig.update_layout(title_text=f"Expenses by Category - {datetime.now().strftime('%B %Y')}",
+                      annotations=[dict(text=f'{total_expenses} zl', x=0.5, y=0.5, font_size=20, showarrow=False)])
     fig.update_traces(textposition='inside', textinfo='percent+value',
                       texttemplate='%{value} zl<br>%{percent}')
     
