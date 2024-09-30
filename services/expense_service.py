@@ -1,5 +1,6 @@
+from datetime import date, datetime
 from typing import Any
-from datetime import datetime, date
+
 from beanie import PydanticObjectId
 
 from db import db
@@ -55,3 +56,25 @@ class ExpenseService:
         ]).to_list()
         
         return expenses_by_category
+    
+    async def get_last_n_expenses(self, user_id: str, n: int) -> list[dict]:
+        expenses = await Expense.aggregate([
+            {"$match": {"user_id": user_id}},
+            {"$lookup": {
+                "from": "category",
+                "localField": "category",
+                "foreignField": "_id",
+                "as": "category_info"
+            }},
+            {"$unwind": "$category_info"},
+            {"$sort": {"date": -1}},
+            {"$limit": n},
+            {"$project": {
+                "date": 1,
+                "amount": 1,
+                "description": 1,
+                "category": "$category_info.name"
+            }}
+        ]).to_list()
+        
+        return expenses
