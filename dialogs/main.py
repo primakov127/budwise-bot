@@ -17,9 +17,9 @@ main_dialog = Dialog(
             state=states.AddTransaction.MAIN,
         ),
         Start(
-            text=Const("⚙️ Settings"),
-            id="settings",
-            state=states.SettingsMenu.MAIN,
+            text=Const("💰 Add Income"),
+            id="income",
+            state=states.AddIncome.MAIN,
         ),
         Start(
             text=Const("📈 Analytics"),

@@ -1,16 +1,12 @@
-from datetime import date, datetime
+from datetime import datetime
 from typing import Any
 
 from beanie import PydanticObjectId
 
-from db import db
 from models import Expense
 
 
 class ExpenseService:
-    def __init__(self):
-        self.collection = db["expenses"]
-        
     async def create_expense(self, expense: Expense) -> PydanticObjectId | None:
         await expense.insert()
         return expense.id

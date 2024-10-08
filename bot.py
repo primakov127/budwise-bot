@@ -15,12 +15,12 @@ from aiohttp import web
 
 from db import init_db
 from dialogs import (
+    add_income_dialog,
     add_transaction_dialog,
     analytics_dialog,
     edit_categories,
     edit_tags,
     main_dialog,
-    settings_menu,
     states,
 )
 
@@ -63,8 +63,8 @@ dialog_router = Router()
 dialog_router.include_routers(
     main_dialog,
     add_transaction_dialog,
+    add_income_dialog,
     analytics_dialog,
-    settings_menu,
     edit_categories,
     edit_tags
 )

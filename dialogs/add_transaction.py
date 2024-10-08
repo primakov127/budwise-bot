@@ -3,7 +3,6 @@ import operator
 from datetime import date
 from typing import Any
 
-from aiogram import F
 from aiogram.types import CallbackQuery, Message
 from aiogram_dialog import Data, Dialog, DialogManager, ShowMode, StartMode, Window
 from aiogram_dialog.widgets.input import TextInput
