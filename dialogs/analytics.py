@@ -11,14 +11,14 @@ from aiogram_dialog.widgets.text import Const, Format
 from dialogs import states
 from dialogs.common import MAIN_MENU_BUTTON
 from services.expense_service import ExpenseService
+from services.income_service import IncomeService
 
 from . import states
 
 
-async def current_month_handler(callback: CallbackQuery, button: Button, manager: DialogManager):
+async def current_month_expense_handler(callback: CallbackQuery, button: Button, manager: DialogManager):
     user_id = str(callback.from_user.id)
-    expense_service = ExpenseService()
-    expenses_by_category = await expense_service.get_current_month_expenses(user_id)
+    expenses_by_category = await ExpenseService.get_current_month_expenses(user_id)
     
     if not expenses_by_category:
         await callback.answer("No expenses found for the current month.")
@@ -26,57 +26,51 @@ async def current_month_handler(callback: CallbackQuery, button: Button, manager
 
     fig = create_pie_chart(expenses_by_category)
     
-    # Save the plot as a PNG image
+    await send_chart(callback, fig, "current_month_expenses.png")
+    await manager.start(states.Main.MAIN, show_mode=ShowMode.DELETE_AND_SEND)
+
+async def last_n_expenses_handler(callback: CallbackQuery, button: Button, manager: DialogManager):
+    count = 20
+    user_id = str(callback.from_user.id)
+    last_n_expenses = await ExpenseService.get_last_n_expenses(user_id, count)
+    last_n_expenses.reverse()
+    
+    if not last_n_expenses:
+        await callback.answer("No expenses found.")
+        return
+
+    fig = create_expenses_table(last_n_expenses)
+    
+    await send_chart(callback, fig, f"last_{count}_expenses.png", width=512)
+    await manager.start(states.Main.MAIN, show_mode=ShowMode.DELETE_AND_SEND)
+
+async def last_n_incomes_handler(callback: CallbackQuery, button: Button, manager: DialogManager):
+    count = 20
+    user_id = str(callback.from_user.id)
+    last_n_incomes = await IncomeService.get_last_n_incomes(user_id, count)
+    
+    if not last_n_incomes:
+        await callback.answer("No income entries found.")
+        return
+
+    fig = create_incomes_table(last_n_incomes)
+    
+    await send_chart(callback, fig, f"last_{count}_incomes.png", width=512)
+    await manager.start(states.Main.MAIN, show_mode=ShowMode.DELETE_AND_SEND)
+
+async def send_chart(callback: CallbackQuery, fig, filename: str, width=1024, height=1024):
     img_bytes = io.BytesIO()
-    fig.write_image(img_bytes, format="png", width=1024, height=1024, scale=2)
+    fig.write_image(img_bytes, format="png", width=width, height=height, scale=2)
     img_bytes.seek(0)
     
-    # Send the image to the user and await the result
     photo_message = await callback.bot.send_photo(
-        user_id,
-        BufferedInputFile(img_bytes.getvalue(), filename="current_month_expenses.png"),
+        callback.from_user.id,
+        BufferedInputFile(img_bytes.getvalue(), filename=filename),
         caption=datetime.now().strftime("%d %B %Y %H:%M")
     )
     
     remove_message_delayed(photo_message, 10)
-    
-    # Now that the image has been sent, switch the state
-    await manager.start(states.Main.MAIN, show_mode=ShowMode.DELETE_AND_SEND)
 
-async def current_year_handler(c, button, manager):
-    # TODO: Implement current year analytics
-    await c.answer("Current Year analytics not implemented yet")
-    
-async def last_n_transactions_handler(callback: CallbackQuery, button: Button, manager: DialogManager):
-    count = 20
-    user_id = str(callback.from_user.id)
-    expense_service = ExpenseService()
-    last_n_transactions = await expense_service.get_last_n_expenses(user_id, count)
-    last_n_transactions.reverse()
-    
-    if not last_n_transactions:
-        await callback.answer("No transactions found.")
-        return
-
-    fig = create_expense_table(last_n_transactions)
-    
-    # Save the plot as a PNG image
-    img_bytes = io.BytesIO()
-    fig.write_image(img_bytes, format="png", width=512, height=1024, scale=2)
-    img_bytes.seek(0)
-    
-    # Send the image to the user and await the result
-    photo_message = await callback.bot.send_photo(
-        user_id,
-        BufferedInputFile(img_bytes.getvalue(), filename=f"last_{count}_transactions.png"),
-        caption=f"Last {count} Transactions - {datetime.now().strftime('%d %B %Y %H:%M')}"
-    )
-    
-    remove_message_delayed(photo_message, 10)
-    
-    # Now that the image has been sent, switch the state
-    await manager.start(states.Main.MAIN, show_mode=ShowMode.DELETE_AND_SEND)
-    
 def remove_message_delayed(message: Message, delay_seconds: int):
     async def remove_message():
         await asyncio.sleep(delay_seconds)
@@ -97,7 +91,7 @@ def create_pie_chart(expenses_by_category):
     
     return fig
 
-def create_expense_table(transactions: list[dict]):
+def create_expenses_table(transactions: list[dict]):
     count = len(transactions)
     headers = ['Date', 'Category', 'Amount', 'Description']
     cell_values = [
@@ -119,7 +113,34 @@ def create_expense_table(transactions: list[dict]):
     )])
 
     fig.update_layout(
-        title=f"Last {count} Transactions - {datetime.now().strftime('%B %Y %H:%M')}",
+        title=f"Last {count} Expenses - {datetime.now().strftime('%B %Y %H:%M')}",
+        margin=dict(l=20, r=20, t=60, b=20)
+    )
+
+    return fig
+
+def create_incomes_table(transactions: list[dict]):
+    count = len(transactions)
+    headers = ['Date', 'Amount', 'Description']
+    cell_values = [
+        [transaction['date'].strftime('%Y-%m-%d') for transaction in transactions],
+        [f"{transaction['amount']:.2f} zl" for transaction in transactions],
+        [transaction['description'] for transaction in transactions]
+    ]
+
+    fig = go.Figure(data=[go.Table(
+        header=dict(values=headers,
+                    fill_color='royalblue',
+                    align='left',
+                    font=dict(color='white', size=12)),
+        cells=dict(values=cell_values,
+                   fill_color='lavender',
+                   align='left',
+                   font=dict(color='darkslate gray', size=11))
+    )])
+
+    fig.update_layout(
+        title=f"Last {count} Incomes - {datetime.now().strftime('%B %Y %H:%M')}",
         margin=dict(l=20, r=20, t=60, b=20)
     )
 
@@ -129,12 +150,12 @@ analytics_dialog = Dialog(
     Window(
         Format(
             "📊 Welcome to your Analytics Dashboard!\n\n"
-            "Get insights into your expenses and track your spending with ease.\n\n"
+            "Get insights into your expenses and income, and track your finances with ease.\n\n"
             "What would you like to view today?\n\n"
         ),
-        Button(Const("📅 Current Month"), id="current_month", on_click=current_month_handler),
-        # Button(Const("📆 Current Year"), id="current_year", on_click=current_year_handler),
-        Button(Const("📋 Last 20 Transactions"), id="last_20_transactions", on_click=last_n_transactions_handler),
+        Button(Const("📅 Current Month Expenses"), id="current_month_expenses", on_click=current_month_expense_handler),
+        Button(Const("📋 Last 20 Expenses"), id="last_20_expenses", on_click=last_n_expenses_handler),
+        Button(Const("💼 Last 20 Income Entries"), id="last_20_incomes", on_click=last_n_incomes_handler),
         MAIN_MENU_BUTTON,
         state=states.Analytics.MAIN
     )
