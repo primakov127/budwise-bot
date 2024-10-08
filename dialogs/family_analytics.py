@@ -10,15 +10,15 @@ from aiogram_dialog.widgets.text import Const, Format
 
 from dialogs import states
 from dialogs.common import MAIN_MENU_BUTTON
-from services.expense_service import ExpenseService
-from services.income_service import IncomeService
+from services.family_expense_service import FamilyExpenseService
+from services.family_income_service import FamilyIncomeService
 
 from . import states
 
 
 async def current_month_expense_handler(callback: CallbackQuery, button: Button, manager: DialogManager):
     user_id = str(callback.from_user.id)
-    expenses_by_category = await ExpenseService.get_current_month_expenses(user_id)
+    expenses_by_category = await FamilyExpenseService.get_current_month_expenses(user_id)
     
     if not expenses_by_category:
         await callback.answer("No expenses found for the current month.")
@@ -32,7 +32,7 @@ async def current_month_expense_handler(callback: CallbackQuery, button: Button,
 async def last_n_expenses_handler(callback: CallbackQuery, button: Button, manager: DialogManager):
     count = 20
     user_id = str(callback.from_user.id)
-    last_n_expenses = await ExpenseService.get_last_n_expenses(user_id, count)
+    last_n_expenses = await FamilyExpenseService.get_last_n_expenses(user_id, count)
     last_n_expenses.reverse()
     
     if not last_n_expenses:
@@ -47,7 +47,7 @@ async def last_n_expenses_handler(callback: CallbackQuery, button: Button, manag
 async def last_n_incomes_handler(callback: CallbackQuery, button: Button, manager: DialogManager):
     count = 20
     user_id = str(callback.from_user.id)
-    last_n_incomes = await IncomeService.get_last_n_incomes(user_id, count)
+    last_n_incomes = await FamilyIncomeService.get_last_n_incomes(user_id, count)
     
     if not last_n_incomes:
         await callback.answer("No income entries found.")
@@ -146,17 +146,17 @@ def create_incomes_table(transactions: list[dict]):
 
     return fig
 
-analytics_dialog = Dialog(
+family_analytics_dialog = Dialog(
     Window(
         Format(
-            "📊 Welcome to your Analytics Dashboard!\n\n"
-            "Get insights into your expenses and income, and track your finances with ease.\n\n"
+            "📊 Welcome to your Family Analytics Dashboard!\n\n"
+            "Get insights into your family's expenses and income, and track your finances with ease.\n\n"
             "What would you like to view today?\n\n"
         ),
         Button(Const("📅 Current Month Expenses"), id="current_month_expenses", on_click=current_month_expense_handler),
         Button(Const("📋 Last 20 Expenses"), id="last_20_expenses", on_click=last_n_expenses_handler),
         Button(Const("💼 Last 20 Income Entries"), id="last_20_incomes", on_click=last_n_incomes_handler),
         MAIN_MENU_BUTTON,
-        state=states.Analytics.MAIN
+        state=states.FamilyAnalytics.MAIN
     )
 )

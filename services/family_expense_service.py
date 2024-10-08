@@ -1,12 +1,12 @@
 from datetime import datetime
 
-from models import Expense
+from models import FamilyExpense
 
 
-class ExpenseService:
+class FamilyExpenseService:
     async def get_current_month_expenses(user_id: str) -> list[dict]:
         month = datetime.now().month
-        expenses_by_category = await Expense.aggregate([
+        expenses_by_category = await FamilyExpense.aggregate([
             {"$match": {
                 "user_id": user_id,
                 "$expr": {"$eq": [{"$month": "$date"}, month]}
@@ -31,7 +31,7 @@ class ExpenseService:
         return expenses_by_category
     
     async def get_last_n_expenses(user_id: str, n: int) -> list[dict]:
-        expenses = await Expense.aggregate([
+        expenses = await FamilyExpense.aggregate([
             {"$match": {"user_id": user_id}},
             {"$lookup": {
                 "from": "category",

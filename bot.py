@@ -15,12 +15,15 @@ from aiohttp import web
 
 from db import init_db
 from dialogs import (
+    add_family_income_dialog,
+    add_family_transaction_dialog,
     add_income_dialog,
     add_transaction_dialog,
     analytics_dialog,
-    edit_categories,
-    edit_tags,
+    family_analytics_dialog,
+    family_menu_dialog,
     main_dialog,
+    personal_menu_dialog,
     states,
 )
 
@@ -61,12 +64,15 @@ async def on_unknown_intent(event: ErrorEvent, dialog_manager: DialogManager):
 
 dialog_router = Router()
 dialog_router.include_routers(
-    main_dialog,
-    add_transaction_dialog,
+    add_family_income_dialog,
+    add_family_transaction_dialog,
     add_income_dialog,
+    add_transaction_dialog,
     analytics_dialog,
-    edit_categories,
-    edit_tags
+    family_analytics_dialog,
+    family_menu_dialog,
+    main_dialog,
+    personal_menu_dialog,
 )
 
 

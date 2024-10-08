@@ -8,7 +8,7 @@ from aiogram_dialog.widgets.input import TextInput
 from aiogram_dialog.widgets.kbd import Button, Calendar, Row, SwitchTo
 from aiogram_dialog.widgets.text import Const, Format
 
-from models import Income
+from models import FamilyIncome
 from widgets import Numpad
 
 from . import states
@@ -40,14 +40,14 @@ async def on_amount_changed(callback: CallbackQuery, widget: Any, manager: Dialo
 async def on_description_changed(message: Message, textInput, manager: DialogManager, description: str):
     manager.current_context().widget_data[FIELD_DESCRIPTION] = description
     await message.delete()
-    await manager.switch_to(states.AddIncome.CONFIRM, ShowMode.DELETE_AND_SEND)
+    await manager.switch_to(states.AddFamilyIncome.CONFIRM, ShowMode.DELETE_AND_SEND)
 
 async def on_income_added(callback: CallbackQuery, widget: Any, manager: DialogManager):
     income_amount = float(manager.current_context().widget_data[FIELD_AMOUNT])
     income_date = manager.current_context().widget_data[FIELD_DATE]
     income_description = manager.current_context().widget_data.get(FIELD_DESCRIPTION)
     
-    income = Income(
+    income = FamilyIncome(
         amount=income_amount,
         date=income_date,
         description=income_description,
@@ -61,7 +61,7 @@ async def on_income_added(callback: CallbackQuery, widget: Any, manager: DialogM
 async def on_date_changed(callback: CallbackQuery, widget, manager: DialogManager, selected_date: date):
     manager.current_context().widget_data[FIELD_DATE] = selected_date
     
-add_income_dialog = Dialog(
+add_family_income_dialog = Dialog(
     Window(
         Const("Specify income amount:"),
         Format(f"{{{FIELD_AMOUNT}}} {INCOME_CURRENCY}"),
@@ -70,10 +70,10 @@ add_income_dialog = Dialog(
             on_value_changed=on_amount_changed,
         ),
         Row(
-            SwitchTo(Const("Continue"), id="continue", state=states.AddIncome.CONFIRM),
+            SwitchTo(Const("Continue"), id="continue", state=states.AddFamilyIncome.CONFIRM),
             CANCEL_MENU_BUTTON
         ),
-        state=states.AddIncome.MAIN
+        state=states.AddFamilyIncome.MAIN
     ),
     Window(
         Const("Add the following income?"),
@@ -87,14 +87,14 @@ add_income_dialog = Dialog(
         SwitchTo(
             Const("Description"),
             id="description",
-            state=states.AddIncome.SPECIFY_DESCRIPTION
+            state=states.AddFamilyIncome.SPECIFY_DESCRIPTION
         ),
         SwitchTo(
             Const("Change date"),
             id="date",
-            state=states.AddIncome.CHANGE_DATE
+            state=states.AddFamilyIncome.CHANGE_DATE
         ),
-        state=states.AddIncome.CONFIRM
+        state=states.AddFamilyIncome.CONFIRM
     ),
     Window(
         Const("Specify description"),
@@ -106,11 +106,11 @@ add_income_dialog = Dialog(
             SwitchTo(
                 Const("Back"),
                 id="back",
-                state=states.AddIncome.CONFIRM
+                state=states.AddFamilyIncome.CONFIRM
             ),
             CANCEL_MENU_BUTTON,
         ),
-        state=states.AddIncome.SPECIFY_DESCRIPTION,
+        state=states.AddFamilyIncome.SPECIFY_DESCRIPTION,
         getter=getter,
     ),
     Window(
@@ -123,15 +123,15 @@ add_income_dialog = Dialog(
             SwitchTo(
                 Const("Change"),
                 id="change",
-                state=states.AddIncome.CONFIRM
+                state=states.AddFamilyIncome.CONFIRM
             ),
             SwitchTo(
                 Const("Back"),
                 id="back",
-                state=states.AddIncome.CONFIRM
+                state=states.AddFamilyIncome.CONFIRM
             ),
         ),
-        state=states.AddIncome.CHANGE_DATE
+        state=states.AddFamilyIncome.CHANGE_DATE
     ),
     on_start=on_start,
     getter=getter,
