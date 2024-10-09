@@ -5,7 +5,12 @@ from models import Expense
 
 class ExpenseService:
     async def get_current_month_expenses(user_id: str) -> list[dict]:
-        month = datetime.now().month
+        current_month = datetime.now().month
+        expenses_by_category = await ExpenseService.get_month_expenses(user_id, current_month)
+        
+        return expenses_by_category
+
+    async def get_month_expenses(user_id: str, month: int) -> list[dict]:
         expenses_by_category = await Expense.aggregate([
             {"$match": {
                 "user_id": user_id,

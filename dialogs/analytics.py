@@ -7,6 +7,7 @@ from aiogram.types import BufferedInputFile, CallbackQuery, Message
 from aiogram_dialog import Dialog, DialogManager, ShowMode, Window
 from aiogram_dialog.widgets.kbd import Button
 from aiogram_dialog.widgets.text import Const, Format
+from dateutil.relativedelta import relativedelta
 
 from dialogs import states
 from dialogs.common import MAIN_MENU_BUTTON
@@ -19,6 +20,20 @@ from . import states
 async def current_month_expense_handler(callback: CallbackQuery, button: Button, manager: DialogManager):
     user_id = str(callback.from_user.id)
     expenses_by_category = await ExpenseService.get_current_month_expenses(user_id)
+    
+    if not expenses_by_category:
+        await callback.answer("No expenses found for the current month.")
+        return
+
+    fig = create_pie_chart(expenses_by_category)
+    
+    await send_chart(callback, fig, "current_month_expenses.png")
+    await manager.start(states.Main.MAIN, show_mode=ShowMode.DELETE_AND_SEND)
+    
+async def last_month_expense_handler(callback: CallbackQuery, button: Button, manager: DialogManager):
+    user_id = str(callback.from_user.id)
+    last_month = (datetime.now() - relativedelta(months=1)).month
+    expenses_by_category = await ExpenseService.get_month_expenses(user_id, last_month)
     
     if not expenses_by_category:
         await callback.answer("No expenses found for the current month.")
@@ -154,6 +169,7 @@ analytics_dialog = Dialog(
             "What would you like to view today?\n\n"
         ),
         Button(Const("📅 Current Month Expenses"), id="current_month_expenses", on_click=current_month_expense_handler),
+        Button(Const("📆 Last Month Expenses"), id="last_month_expenses", on_click=last_month_expense_handler),
         Button(Const("📋 Last 20 Expenses"), id="last_20_expenses", on_click=last_n_expenses_handler),
         Button(Const("💼 Last 20 Income Entries"), id="last_20_incomes", on_click=last_n_incomes_handler),
         MAIN_MENU_BUTTON,
