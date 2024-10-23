@@ -45,7 +45,7 @@ async def last_month_expense_handler(callback: CallbackQuery, button: Button, ma
     await manager.start(states.Main.MAIN, show_mode=ShowMode.DELETE_AND_SEND)
 
 async def last_n_expenses_handler(callback: CallbackQuery, button: Button, manager: DialogManager):
-    count = 20
+    count = 15
     user_id = str(callback.from_user.id)
     last_n_expenses = await ExpenseService.get_last_n_expenses(user_id, count)
     last_n_expenses.reverse()
@@ -63,6 +63,7 @@ async def last_n_incomes_handler(callback: CallbackQuery, button: Button, manage
     count = 20
     user_id = str(callback.from_user.id)
     last_n_incomes = await IncomeService.get_last_n_incomes(user_id, count)
+    last_n_incomes.reverse()
     
     if not last_n_incomes:
         await callback.answer("No income entries found.")
@@ -170,7 +171,7 @@ analytics_dialog = Dialog(
         ),
         Button(Const("📅 Current Month Expenses"), id="current_month_expenses", on_click=current_month_expense_handler),
         Button(Const("📆 Last Month Expenses"), id="last_month_expenses", on_click=last_month_expense_handler),
-        Button(Const("📋 Last 20 Expenses"), id="last_20_expenses", on_click=last_n_expenses_handler),
+        Button(Const("📋 Last 15 Expenses"), id="last_15_expenses", on_click=last_n_expenses_handler),
         Button(Const("💼 Last 20 Income Entries"), id="last_20_incomes", on_click=last_n_incomes_handler),
         MAIN_MENU_BUTTON,
         state=states.Analytics.MAIN
