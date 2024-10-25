@@ -5,3 +5,5 @@ services:
     image: primakov127/budwise-bot:latest
     container_name: budwise-bot
     restart: on-failure:3
+    ports:
+      - "${WEB_PORT}:${WEB_PORT}"
