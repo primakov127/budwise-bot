@@ -43,6 +43,34 @@ async def last_month_expense_handler(callback: CallbackQuery, button: Button, ma
     
     await send_chart(callback, fig, "current_month_expenses.png")
     await manager.start(states.Main.MAIN, show_mode=ShowMode.DELETE_AND_SEND)
+    
+async def last_month1_expense_handler(callback: CallbackQuery, button: Button, manager: DialogManager):
+    user_id = str(callback.from_user.id)
+    last_month = (datetime.now() - relativedelta(months=1)).month - 1
+    expenses_by_category = await FamilyExpenseService.get_month_expenses(user_id, last_month)
+    
+    if not expenses_by_category:
+        await callback.answer("No expenses found for the current month.")
+        return
+
+    fig = create_pie_chart(expenses_by_category)
+    
+    await send_chart(callback, fig, "current_month_expenses.png")
+    await manager.start(states.Main.MAIN, show_mode=ShowMode.DELETE_AND_SEND)
+    
+async def last_month2_expense_handler(callback: CallbackQuery, button: Button, manager: DialogManager):
+    user_id = str(callback.from_user.id)
+    last_month = (datetime.now() - relativedelta(months=1)).month - 2
+    expenses_by_category = await FamilyExpenseService.get_month_expenses(user_id, last_month)
+    
+    if not expenses_by_category:
+        await callback.answer("No expenses found for the current month.")
+        return
+
+    fig = create_pie_chart(expenses_by_category)
+    
+    await send_chart(callback, fig, "current_month_expenses.png")
+    await manager.start(states.Main.MAIN, show_mode=ShowMode.DELETE_AND_SEND)
 
 async def last_n_expenses_handler(callback: CallbackQuery, button: Button, manager: DialogManager):
     count = 20
@@ -171,6 +199,8 @@ family_analytics_dialog = Dialog(
         ),
         Button(Const("📅 Current Month Expenses"), id="current_month_expenses", on_click=current_month_expense_handler),
         Button(Const("📆 Last Month Expenses"), id="last_month_expenses", on_click=last_month_expense_handler),
+        Button(Const("📆 Last Month Expenses - 1"), id="last_month1_expenses", on_click=last_month1_expense_handler),
+        Button(Const("📆 Last Month Expenses - 2"), id="last_month2_expenses", on_click=last_month2_expense_handler),
         Button(Const("📋 Last 15 Expenses"), id="last_15_expenses", on_click=last_n_expenses_handler),
         Button(Const("💼 Last 20 Income Entries"), id="last_20_incomes", on_click=last_n_incomes_handler),
         MAIN_MENU_BUTTON,
